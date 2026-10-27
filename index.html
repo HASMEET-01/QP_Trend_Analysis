@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExamTrend AI — University Question Paper Trend & Pattern Analyzer</title>
+  <meta name="description" content="AI-powered university question paper trend analyzer. Track topic weightage, difficulty shifts, recurring questions, and predict high-yield exam topics across years.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Local Vendor Scripts (Self-contained & offline-ready) -->
+  <script src="lucide.min.js"></script>
+  <script src="chart.umd.min.js"></script>
+  <script src="pdf.min.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand-header">
+        <div class="logo-wrapper">
+          <i data-lucide="line-chart" class="logo-icon"></i>
+        </div>
+        <div class="brand-text">
+          <h1>ExamTrend<span>.ai</span></h1>
+          <p>Semester QP Intelligence</p>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Trend Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="heatmap-tab">
+          <i data-lucide="grid"></i>
+          <span>Topic-Year Heatmap</span>
+        </button>
+        <button class="nav-item" data-tab="repeats-tab">
+          <i data-lucide="repeat"></i>
+          <span>Repeated Patterns</span>
+          <span class="badge" id="repeat-count-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="blueprint-tab">
+          <i data-lucide="sparkles"></i>
+          <span>Exam Blueprint</span>
+        </button>
+        <button class="nav-item" data-tab="qbank-tab">
+          <i data-lucide="file-question"></i>
+          <span>Question Bank</span>
+        </button>
+      </nav>
+
+      <div class="subject-switcher">
+        <div class="section-label">Active Course / Analysis</div>
+        <div class="select-wrapper">
+          <select id="subject-selector">
+            <option value="">No subjects analyzed yet</option>
+          </select>
+          <i data-lucide="chevron-down" class="select-icon"></i>
+        </div>
+        <div class="year-range-info" id="dataset-meta-info">
+          Ready for Gemini AI Analysis
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="open-upload-modal-btn" class="btn btn-primary full-width">
+          <i data-lucide="sparkles"></i>
+          <span>Analyze with Gemini</span>
+        </button>
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span id="sidebar-ai-status">Gemini Engine Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="header-left">
+          <div class="header-title-group">
+            <h2 id="page-title">Trend & Frequency Dashboard</h2>
+            <p id="page-subtitle">Multi-year semester question distribution, weightage shifts & difficulty patterns</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="filter-chip-group">
+            <label for="year-filter">Years:</label>
+            <select id="year-filter">
+              <option value="all">All Evaluated Years</option>
+            </select>
+          </div>
+
+          <div class="filter-chip-group">
+            <label for="metric-toggle">Metric:</label>
+            <select id="metric-toggle">
+              <option value="marks">Marks Weightage</option>
+              <option value="count">Question Count</option>
+            </select>
+          </div>
+
+          <button id="btn-gemini-config" class="btn btn-secondary gemini-status-btn" title="Configure Gemini AI Agent">
+            <i data-lucide="bot"></i>
+            <span id="gemini-status-text">Gemini Agent: Set Key</span>
+          </button>
+
+          <button id="export-report-btn" class="btn btn-secondary" title="Export Summary Report">
+            <i data-lucide="download"></i>
+            <span>Export Report</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Tab Content Container -->
+      <div class="content-body">
+        
+        <!-- TAB 1: DASHBOARD -->
+        <section id="dashboard" class="tab-pane active">
+          <!-- Gemini AI Analysis Launcher Hero -->
+          <div class="ai-hero-card" id="ai-hero-launcher">
+            <div class="ai-hero-content">
+              <div class="ai-hero-pill">
+                <i data-lucide="sparkles"></i> Gemini LLM Intelligence • Grounded in Real Papers
+              </div>
+              <h2>Multi-Year University Exam Intelligence</h2>
+              <p>No fabricated data. Gemini analyzes your semester papers, decodes repeated question patterns, generates the 80/20 exam blueprint, and maps the topic-year heatmap.</p>
+              
+              <div class="ai-hero-action-bar">
+                <div class="hero-input-wrap">
+                  <i data-lucide="book-open"></i>
+                  <input type="text" id="hero-subject-input" placeholder="Enter Subject Name (e.g. Operating Systems, Computer Networks)..." value="Operating Systems">
+                </div>
+                <button class="btn btn-primary" id="btn-hero-launch-gemini">
+                  <i data-lucide="bot"></i>
+                  <span>Run Gemini Analysis</span>
+                </button>
+                <button class="btn btn-secondary" id="btn-hero-upload-papers">
+                  <i data-lucide="file-up"></i>
+                  <span>Upload Paper PDFs</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- KPI Summary Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Papers Analyzed</span>
+                <div class="kpi-icon-wrap violet"><i data-lucide="files"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-papers-count">10</div>
+              <div class="kpi-trend positive" id="kpi-years-span">5 Semesters (2020-2024)</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Total Questions</span>
+                <div class="kpi-icon-wrap cyan"><i data-lucide="file-text"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-questions-count">88</div>
+              <div class="kpi-trend neutral" id="kpi-marks-total">Total 700 Marks Evaluated</div>
+            </div>
+
+            <div class="kpi-card highlight-glow">
+              <div class="kpi-header">
+                <span class="kpi-label">Highest-Yield Module</span>
+                <div class="kpi-icon-wrap amber"><i data-lucide="flame"></i></div>
+              </div>
+              <div class="kpi-value truncate" id="kpi-top-topic">Binary Trees & BST</div>
+              <div class="kpi-trend positive" id="kpi-top-topic-stat">24.5% of total exam marks</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Recurring Concept Rate</span>
+                <div class="kpi-icon-wrap emerald"><i data-lucide="refresh-cw"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-repeat-rate">38.6%</div>
+              <div class="kpi-trend positive"><i data-lucide="trending-up"></i> High predictability index</div>
+            </div>
+          </div>
+
+          <!-- Chart Rows -->
+          <div class="charts-grid-2x1">
+            <!-- Topic Frequency / Marks Chart -->
+            <div class="chart-card large">
+              <div class="card-head">
+                <div class="card-title-group">
+                  <h3>Topic Frequency & Marks Distribution Across Years</h3>
+                  <p>Weightage breakdown showing which chapters dominate semester evaluations</p>
+                </div>
+                <div class="card-actions">
+                  <div class="segmented-control" id="chart-type-toggle">
+                    <button class="seg-btn active" data-chart="bar">Bar</button>
+                    <button class="seg-btn" data-chart="line">Trend</button>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="topicTrendChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Question Type & Difficulty Breakdown -->
+            <div class="chart-card">
+              <div class="card-head">
+                <div class="card-title-group">
+                  <h3>Question Difficulty Evolution</h3>
+                  <p>Cognitive complexity distribution (Blooms taxonomy)</p>
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="difficultyTrendChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-grid-2col">
+            <!-- Question Type Breakdown (Donut) -->
+            <div class="chart-card">
+              <div class="card-head">
+                <div class="card-title-group">
+                  <h3>Question Format Share</h3>
+                  <p>Theory vs Numerical / Code / Proof distribution</p>
+                </div>
+              </div>
+              <div class="chart-wrapper donut-wrap">
+                <canvas id="questionTypeChart"></canvas>
+              </div>
+              <div class="chart-legend-custom" id="qtype-legend-container"></div>
+            </div>
+
+            <!-- Top Recurring Questions Snapshot -->
+            <div class="chart-card">
+              <div class="card-head">
+                <div class="card-title-group">
+                  <h3>Top Hotspot Questions</h3>
+                  <p>Concepts repeated 3+ times across question papers</p>
+                </div>
+                <button class="btn btn-sm btn-ghost" onclick="switchTab('repeats-tab')">
+                  View All <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+              <div class="hotspots-list" id="dashboard-hotspots-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: TOPIC-YEAR HEATMAP -->
+        <section id="heatmap-tab" class="tab-pane">
+          <div class="chart-card full-page">
+            <div class="card-head">
+              <div class="card-title-group">
+                <h3>Topic vs. Year Intensity Heatmap</h3>
+                <p>Darker green/indigo indicates heavy concentration of marks in that semester examination</p>
+              </div>
+              <div class="heatmap-legend">
+                <span>0 Marks</span>
+                <span class="heat-box heat-0"></span>
+                <span class="heat-box heat-1"></span>
+                <span class="heat-box heat-2"></span>
+                <span class="heat-box heat-3"></span>
+                <span class="heat-box heat-4"></span>
+                <span>25+ Marks</span>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <div id="heatmap-matrix-container" class="heatmap-table-container">
+                <!-- Heatmap generated dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: REPEATED PATTERNS & SIMILARITY -->
+        <section id="repeats-tab" class="tab-pane">
+          <div class="chart-card full-page">
+            <div class="card-head">
+              <div class="card-title-group">
+                <h3>Repeat & Pattern Recognition Engine</h3>
+                <p>Identifies identical questions, semantic variations, and high-probability cyclical topics</p>
+              </div>
+              <div class="search-input-wrap">
+                <i data-lucide="search"></i>
+                <input type="text" id="repeats-search-input" placeholder="Search recurring topics or concepts...">
+              </div>
+            </div>
+            
+            <div class="repeats-summary-banner">
+              <div class="banner-stat">
+                <i data-lucide="check-circle-2"></i>
+                <div>
+                  <strong id="repeat-clusters-count">7</strong>
+                  <span>High-Frequency Question Clusters Identified</span>
+                </div>
+              </div>
+              <div class="banner-stat">
+                <i data-lucide="zap"></i>
+                <div>
+                  <strong id="repeat-marks-total">140 Marks</strong>
+                  <span>Historical Repeated Pool Potential</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="repeats-clusters-container" id="repeat-clusters-list">
+              <!-- Dynamically populated repeat clusters -->
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: EXAM BLUEPRINT & PREDICTOR -->
+        <section id="blueprint-tab" class="tab-pane">
+          <div class="blueprint-intro-card">
+            <div class="blueprint-intro-content">
+              <div class="badge-pill"><i data-lucide="sparkles"></i> AI Trend Predictor</div>
+              <h3>Upcoming Exam Blueprint & High-Yield Strategy</h3>
+              <p>Formulated using 5-year cyclical cadence, momentum scoring, and Pareto 80/20 mark distribution.</p>
+            </div>
+            <div class="blueprint-score-card">
+              <div class="score-circle">
+                <span class="score-number" id="strategy-coverage">82%</span>
+              </div>
+              <div class="score-desc">
+                <strong>Predicted Marks Coverage</strong>
+                <span>By studying top 4 modules</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="blueprint-grid">
+            <!-- Tier 1: Non-negotiable Must-Study -->
+            <div class="blueprint-card tier-1">
+              <div class="tier-header">
+                <div class="tier-badge red">Tier 1: Guaranteed Core (50-60% Marks)</div>
+                <span class="tier-prob">95%+ Probability</span>
+              </div>
+              <p class="tier-desc">These topics appear every single year without exception. Clear these first.</p>
+              <div class="tier-topics-list" id="tier-1-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Tier 2: High Probability Cyclical -->
+            <div class="blueprint-card tier-2">
+              <div class="tier-header">
+                <div class="tier-badge yellow">Tier 2: High Yield Cyclical (25-35% Marks)</div>
+                <span class="tier-prob">75% Probability</span>
+              </div>
+              <p class="tier-desc">Alternate-year rotation topics. Highly likely for the next semester cycle.</p>
+              <div class="tier-topics-list" id="tier-2-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Tier 3: Low Yield / Optional Choice -->
+            <div class="blueprint-card tier-3">
+              <div class="tier-header">
+                <div class="tier-badge blue">Tier 3: Minor / Optional Choice (10-15% Marks)</div>
+                <span class="tier-prob">30-40% Probability</span>
+              </div>
+              <p class="tier-desc">Typically appearing as short notes or sub-options in question papers.</p>
+              <div class="tier-topics-list" id="tier-3-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: QUESTION BANK EXPLORER -->
+        <section id="qbank-tab" class="tab-pane">
+          <div class="chart-card full-page">
+            <div class="card-head wrap">
+              <div class="card-title-group">
+                <h3>Curated Question Repository</h3>
+                <p>Filter, search, and review all extracted previous year semester questions</p>
+              </div>
+
+              <div class="qbank-filters">
+                <div class="search-input-wrap">
+                  <i data-lucide="search"></i>
+                  <input type="text" id="qbank-search" placeholder="Search keywords (e.g., Dijkstra, B-Tree, Normalization)...">
+                </div>
+
+                <select id="qbank-filter-topic" class="custom-select-small">
+                  <option value="all">All Topics</option>
+                  <!-- Populated dynamically -->
+                </select>
+
+                <select id="qbank-filter-diff" class="custom-select-small">
+                  <option value="all">All Difficulties</option>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+
+                <select id="qbank-filter-marks" class="custom-select-small">
+                  <option value="all">All Marks</option>
+                  <option value="2">2 - 3 Marks</option>
+                  <option value="5">5 - 7 Marks</option>
+                  <option value="10">10+ Marks</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="qbank-results-counter">
+              Showing <span id="qbank-visible-count">0</span> of <span id="qbank-total-count">0</span> questions
+            </div>
+
+            <div class="qbank-table-wrap">
+              <table class="qbank-table">
+                <thead>
+                  <tr>
+                    <th style="width: 80px;">Year</th>
+                    <th style="width: 120px;">Topic</th>
+                    <th>Question Statement</th>
+                    <th style="width: 80px;">Marks</th>
+                    <th style="width: 100px;">Difficulty</th>
+                    <th style="width: 100px;">Type</th>
+                  </tr>
+                </thead>
+                <tbody id="qbank-tbody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- UPLOAD & ANALYZE MODAL -->
+  <div class="modal-backdrop" id="upload-modal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="agent-avatar"><i data-lucide="bot"></i></div>
+          <div>
+            <h3>Agentic Question Paper Analyzer</h3>
+            <p>Multimodal AI document understanding powered by Google Gemini</p>
+          </div>
+        </div>
+        <button class="btn-close" id="close-upload-modal-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Gemini Agent Configuration Banner inside Modal -->
+      <div class="agent-config-banner" id="modal-agent-banner">
+        <div class="agent-config-left">
+          <i data-lucide="sparkles" class="text-amber"></i>
+          <div>
+            <strong>Google Gemini Multimodal Ingestion</strong>
+            <span id="banner-api-key-status">Key configured (Active)</span>
+          </div>
+        </div>
+        <div class="agent-config-right">
+          <div class="api-key-input-group">
+            <input type="password" id="modal-gemini-key-input" placeholder="Paste Gemini API Key (AI Studio)...">
+            <button class="btn btn-sm btn-secondary" id="modal-save-key-btn">Save Key</button>
+          </div>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-small">Get Free API Key ↗</a>
+        </div>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-tab-target="tab-pdf-upload">
+          <i data-lucide="sparkles"></i> 🤖 Agentic Document Parser (PDF / Scan)
+        </button>
+        <button class="modal-tab-btn" data-tab-target="tab-text-paste">
+          <i data-lucide="align-left"></i> Paste Raw Text
+        </button>
+        <button class="modal-tab-btn" data-tab-target="tab-sample-loader">
+          <i data-lucide="database"></i> Load Sample Benchmarks
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Subtab 1: Agentic PDF/Image Upload -->
+        <div class="modal-subtab active" id="tab-pdf-upload">
+          <div class="drop-zone" id="pdf-drop-zone">
+            <div class="drop-agent-icon">
+              <i data-lucide="file-search"></i>
+            </div>
+            <h4>Upload or Drop University Question Paper</h4>
+            <p>Supports multi-page digital PDFs, photocopies & scanned question paper images</p>
+            <input type="file" id="pdf-file-input" accept="application/pdf,image/png,image/jpeg,image/webp" style="display: none;">
+            <div class="drop-btn-row">
+              <button class="btn btn-primary" onclick="document.getElementById('pdf-file-input').click()">
+                <i data-lucide="upload"></i> Select Paper (PDF or Image)
+              </button>
+              <button class="btn btn-secondary" id="btn-use-sample-pdf">
+                <i data-lucide="file-check"></i> Try Sample Paper (OS 2024)
+              </button>
+            </div>
+            <div class="accepted-formats">Supported: PDF, Scanned Images (PNG, JPG, WEBP) • Up to 20MB</div>
+          </div>
+
+          <div class="form-row-3col mt-3">
+            <div class="form-group">
+              <label>Subject Name</label>
+              <input type="text" id="upload-subject" placeholder="e.g. Operating Systems / DSA" value="Operating Systems">
+            </div>
+            <div class="form-group">
+              <label>Exam Year</label>
+              <input type="number" id="upload-year" min="2015" max="2030" value="2024">
+            </div>
+            <div class="form-group">
+              <label>Semester / Term</label>
+              <input type="text" id="upload-term" placeholder="e.g. End-Sem Dec 2024" value="End-Sem Dec 2024">
+            </div>
+          </div>
+
+          <!-- Multi-Agent Live Execution Stepper -->
+          <div id="agent-stepper" class="agent-stepper-box" style="display: none;">
+            <div class="stepper-title">
+              <div class="spinner-ring"></div>
+              <strong id="agent-stepper-headline">Agentic AI Pipeline Executing...</strong>
+            </div>
+
+            <div class="stepper-steps">
+              <div class="step-node" id="step-node-1">
+                <div class="step-icon"><i data-lucide="scan"></i></div>
+                <div class="step-info">
+                  <strong>Agent 1: Vision OCR & Document Layout</strong>
+                  <span>Reading pages, formulas & question boundaries</span>
+                </div>
+                <div class="step-status" id="step-status-1">Running...</div>
+              </div>
+
+              <div class="step-node" id="step-node-2">
+                <div class="step-icon"><i data-lucide="brain"></i></div>
+                <div class="step-info">
+                  <strong>Agent 2: Bloom's Taxonomy & Marks Evaluator</strong>
+                  <span>Assessing cognitive demand & marks weightage</span>
+                </div>
+                <div class="step-status" id="step-status-2">Pending</div>
+              </div>
+
+              <div class="step-node" id="step-node-3">
+                <div class="step-icon"><i data-lucide="book-marked"></i></div>
+                <div class="step-info">
+                  <strong>Agent 3: Curriculum Mapping & Topic Discovery</strong>
+                  <span>Synthesizing syllabus units & modules</span>
+                </div>
+                <div class="step-status" id="step-status-3">Pending</div>
+              </div>
+            </div>
+
+            <!-- Agent Terminal Console -->
+            <div class="agent-terminal" id="agent-terminal-logs">
+              <div class="terminal-line text-cyan">[System] Initializing Gemini Multimodal Agent Engine...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtab 2: Text Paste -->
+        <div class="modal-subtab" id="tab-text-paste">
+          <div class="form-row-3col">
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" id="paste-subject" placeholder="e.g. Computer Networks" value="Computer Networks">
+            </div>
+            <div class="form-group">
+              <label>Exam Year</label>
+              <input type="number" id="paste-year" min="2015" max="2030" value="2024">
+            </div>
+            <div class="form-group">
+              <label>Term / Exam</label>
+              <input type="text" id="paste-term" value="End-Sem 2024">
+            </div>
+          </div>
+
+          <div class="form-group mt-2">
+            <div class="label-with-helper">
+              <label>Paste Question Paper Text</label>
+              <button class="btn-text" id="btn-insert-template">Insert Format Template</button>
+            </div>
+            <textarea id="paste-paper-text" rows="9" placeholder="Paste questions here...
+Q1. Explain A* search algorithm with an admissible heuristic. [10 Marks]
+Q2. What is Alpha-Beta pruning? Compare with Minimax algorithm. [8 Marks]
+Q3. Define Unification in First-Order Logic with an example. [6 Marks]
+Q4. Explain Resolution theorem proving in propositional calculus. [8 Marks]"></textarea>
+          </div>
+          <button class="btn btn-secondary mt-2" id="btn-agent-parse-text">
+            <i data-lucide="sparkles"></i> <span>Analyze with Gemini Agent</span>
+          </button>
+        </div>
+
+        <!-- Subtab 3: Sample Datasets -->
+        <div class="modal-subtab" id="tab-sample-loader">
+          <p class="helper-text">Instantly switch between comprehensive pre-loaded 4 to 5 year university question datasets:</p>
+          <div class="sample-cards-grid">
+            <div class="sample-card" onclick="loadBenchmarkDataset('dsa')">
+              <div class="sample-title">Data Structures & Algorithms</div>
+              <div class="sample-meta">5 Years (2020-2024) • 88 Questions • End-Sem & Mid-Sem</div>
+              <div class="sample-tags">
+                <span>Trees</span><span>Graphs</span><span>Dynamic Prog</span><span>Hashing</span>
+              </div>
+            </div>
+            <div class="sample-card" onclick="loadBenchmarkDataset('os')">
+              <div class="sample-title">Operating Systems</div>
+              <div class="sample-meta">4 Years (2021-2024) • 72 Questions • 550 Marks</div>
+              <div class="sample-tags">
+                <span>Deadlocks</span><span>Memory Mgt</span><span>Paging</span><span>CPU Sched</span>
+              </div>
+            </div>
+            <div class="sample-card" onclick="loadBenchmarkDataset('dbms')">
+              <div class="sample-title">Database Management Systems</div>
+              <div class="sample-meta">4 Years (2021-2024) • 66 Questions • 520 Marks</div>
+              <div class="sample-tags">
+                <span>Normalization</span><span>SQL/RelAlg</span><span>Concurrency</span><span>Indexing</span>
+              </div>
+            </div>
+            <div class="sample-card" onclick="loadBenchmarkDataset('cn')">
+              <div class="sample-title">Computer Networks</div>
+              <div class="sample-meta">5 Years (2020-2024) • 52 Questions • 510 Marks</div>
+              <div class="sample-tags">
+                <span>Subnetting</span><span>Routing (Dijkstra)</span><span>TCP Congestion</span><span>CSMA/CD</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parsed Preview (If text or PDF parsed) -->
+        <div id="parsed-preview-box" class="preview-box" style="display: none;">
+          <div class="preview-header">
+            <strong><i data-lucide="check"></i> Auto-Extracted Preview:</strong>
+            <span id="preview-stat-count">0 Questions Detected</span>
+          </div>
+          <div class="preview-list" id="preview-items-container">
+            <!-- Dynamically populated list -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-upload-btn">Cancel</button>
+        <button class="btn btn-primary" id="commit-analysis-btn">
+          <i data-lucide="sparkles"></i>
+          <span>Run Analysis & Update Trends</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT EXPORT MODAL -->
+  <div class="modal-backdrop" id="report-modal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i data-lucide="printer" class="modal-icon"></i>
+          <div>
+            <h3>Executive Exam Trend Report</h3>
+            <p>Comprehensive analytical summary ready for print or PDF save</p>
+          </div>
+        </div>
+        <button class="btn-close" id="close-report-modal-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body report-printable" id="report-print-content">
+        <!-- Rendered Report Content -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="close-report-btn">Close</button>
+        <button class="btn btn-secondary" id="download-json-btn">
+          <i data-lucide="code"></i> Download JSON
+        </button>
+        <button class="btn btn-primary" onclick="window.print()">
+          <i data-lucide="printer"></i> Print / Save as PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEMINI AGENT SETTINGS MODAL -->
+  <div class="modal-backdrop" id="gemini-settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="agent-avatar"><i data-lucide="bot"></i></div>
+          <div>
+            <h3>Gemini AI Agent Settings</h3>
+            <p>Multimodal vision & document intelligence configuration</p>
+          </div>
+        </div>
+        <button class="btn-close" id="close-gemini-modal-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="gemini-modal-intro">
+          <div class="intro-icon"><i data-lucide="sparkles"></i></div>
+          <div>
+            <h4>Why Gemini Multimodal?</h4>
+            <p>Standard regex parsers fail on real university papers (scanned copies, watermarks, two-column layouts, handwritten text). Gemini reads the full document natively, extracts exact questions, detects Bloom's taxonomy levels, and maps topics automatically.</p>
+          </div>
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Google Gemini API Key</label>
+          <div class="input-with-button">
+            <input type="password" id="input-gemini-api-key" placeholder="AIzaSy...">
+            <button class="btn btn-secondary" id="btn-toggle-key-visibility" type="button">
+              <i data-lucide="eye" id="icon-key-visibility"></i>
+            </button>
+          </div>
+          <div class="input-helper-row">
+            <span>Get your free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-small">Google AI Studio ↗</a> (Free tier includes 15 RPM)</span>
+          </div>
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Gemini Vision Model</label>
+          <select id="select-gemini-model" class="custom-select-small full-width">
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Recommended: Ultra-fast & Free)</option>
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash (Next-gen reasoning)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deepest multi-page analysis)</option>
+          </select>
+        </div>
+
+        <div id="gemini-test-status" class="status-box mt-3" style="display: none;">
+          <div class="status-spinner" id="gemini-test-spinner"></div>
+          <span id="gemini-test-msg">Testing connection...</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-test-gemini-key">
+          <i data-lucide="activity"></i> Test Key
+        </button>
+        <button class="btn btn-primary" id="btn-save-gemini-key">
+          <i data-lucide="check"></i> Save & Enable Agent
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>

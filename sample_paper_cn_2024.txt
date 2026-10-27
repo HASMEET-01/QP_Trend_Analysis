@@ -1,0 +1,32 @@
+# Sample University Question Paper: Computer Networks (End-Sem 2024)
+
+Course: Computer Science & Engineering
+Subject: Computer Networks
+Subject Code: CS502
+Maximum Marks: 100
+Time: 3 Hours
+
+---
+
+Q1. Explain the OSI 7-Layer Reference Model. Discuss the key functions and responsibilities of the Data Link Layer and Transport Layer. [10 Marks]
+
+Q2. What is Framing? Explain bit stuffing and byte stuffing techniques with neat diagrams. [8 Marks]
+
+Q3. Compare Stop-and-Wait ARQ, Go-Back-N ARQ, and Selective Repeat ARQ in terms of sender window size, receiver window size, and efficiency. [10 Marks]
+
+Q4. Explain the working of CSMA/CD protocol. How does it handle collisions in Ethernet networks? [8 Marks]
+
+Q5. A network with IP address 192.168.10.0/24 needs to be divided into 4 subnets. Calculate the subnet mask, network address, broadcast address, and usable IP range for each subnet. [10 Marks]
+
+Q6. Explain Dijkstra's Shortest Path Algorithm for Link State Routing with an example network topology. [10 Marks]
+
+Q7. Explain Distance Vector Routing Algorithm and the Count-to-Infinity problem. How does Poison Reverse mitigate this? [10 Marks]
+
+Q8. Describe the TCP Three-Way Handshake connection establishment and Four-Way connection termination process. [10 Marks]
+
+Q9. Explain TCP Congestion Control mechanisms: Slow Start, Congestion Avoidance, Fast Retransmit, and Fast Recovery. [12 Marks]
+
+Q10. Write short notes on any two of the following: [12 Marks]
+    (a) Domain Name System (DNS) resolution process
+    (b) Differences between IPv4 and IPv6 headers
+    (c) HTTP/1.1 vs HTTP/2 protocol enhancements

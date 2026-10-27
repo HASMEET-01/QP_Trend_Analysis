@@ -1,0 +1,55 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 720 >>
+stream
+BT
+/F1 16 Tf
+50 720 Td
+(UNIVERSITY END-SEMESTER EXAMINATION - 2024) Tj
+/F1 12 Tf
+0 -30 Td
+(Subject: Operating Systems [CS402]          Time: 3 Hours          Max Marks: 100) Tj
+0 -40 Td
+(Q1. Explain Banker's Algorithm for deadlock avoidance with state safety check. [10 Marks]) Tj
+0 -30 Td
+(Q2. State the four necessary conditions for deadlock. How can deadlock be prevented? [8 Marks]) Tj
+0 -30 Td
+(Q3. Explain Dining Philosophers problem and provide a solution using semaphores. [10 Marks]) Tj
+0 -30 Td
+(Q4. Calculate average turnaround time for Preemptive SJF and Round Robin (q=2ms). [10 Marks]) Tj
+0 -30 Td
+(Q5. Explain paging hardware with Translation Lookaside Buffer (TLB). [8 Marks]) Tj
+0 -30 Td
+(Q6. Compute page faults for reference string 7, 0, 1, 2, 0, 3, 0, 4 using FIFO and LRU. [10 Marks]) Tj
+0 -30 Td
+(Q7. Find total head movement for SSTF and SCAN disk scheduling for given cylinders. [8 Marks]) Tj
+0 -30 Td
+(Q8. Differentiate between user-level threads and kernel-level threads. [6 Marks]) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000060 00000 n 
+0000000117 00000 n 
+0000000236 00000 n 
+0000001007 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1076
+%%EOF
